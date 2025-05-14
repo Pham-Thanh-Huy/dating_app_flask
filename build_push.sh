@@ -1,1 +1,2 @@
-docker file -t datting-app .
+version=$1
+docker build -t datting-app:${version:-latest} .
