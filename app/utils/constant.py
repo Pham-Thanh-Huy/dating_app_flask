@@ -1,5 +1,6 @@
 class Constant:
-    ADD_USER_SUCCESS = "Thêm người dùng thành công"
+    ADD_USER_SUCCESS = "Thêm người dùng thành công!"
+    USERNAME_OR_PASSWORD_INCORRECT = "Tài khoản hoặc mật khẩu không đúng "
 
     class API_STATUS:
         INTERNAL_SERVER_ERROR = 500
