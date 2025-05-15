@@ -9,8 +9,7 @@ def register_api():
     return jsonify(response), response['code']
 
 
-@authen_api.route('/login', methods=['POST'])
+@authen_api.route('/signin', methods=['POST'])
 def login_api():
     response = login_service()
     return jsonify(response), response['code']
-
