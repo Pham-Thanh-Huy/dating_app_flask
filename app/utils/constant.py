@@ -4,6 +4,8 @@ class Constant:
     LOGIN_SUCCESS = "Đăng nhập thành công!"
     TOKEN_INVALID= "Token không hợp lệ!"
     TOKEN_EXPIRED = "Token hết hạn!"
+    DELETE_SUCCESS = "Xóa thành công!"
+    CHANGE_PASSWORD_SUCCESS= "Đổi mật khẩu thành công!"
     class API_STATUS:
         INTERNAL_SERVER_ERROR = 500
         SUCCESS = 200

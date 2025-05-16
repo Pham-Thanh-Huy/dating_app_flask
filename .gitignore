@@ -7,18 +7,18 @@ __pycache__/
 *.so
 
 # Virtual environments
-#env/
-#venv/
-#ENV/
-#.venv/
-#.ENV/
+env/
+venv/
+ENV/
+.venv/
+.ENV/
 
 # Environment variables
-#.env
-#*.env
+.env
+*.env
 
-# Pytest, coverage
-.cache
+# Pytest, coverage, test reports
+.cache/
 .coverage
 .tox/
 nosetests.xml
@@ -26,11 +26,11 @@ coverage.xml
 *.cover
 .hypothesis/
 
-# Flask/Django stuff:
+# Flask/Django specific
 instance/
 *.log
 
-# SQLite database
+# SQLite and DB files
 *.sqlite3
 *.db
 
@@ -45,7 +45,7 @@ instance/
 migrations/__pycache__/
 migrations/*.pyc
 
-# Compiled source #
+# Compiled source
 *.com
 *.class
 *.dll
@@ -53,24 +53,24 @@ migrations/*.pyc
 *.o
 *.so
 
-# Docker
+# Docker files
 *.pid
 *.tar
 docker-compose.override.yml
 
-# Jupyter
-.ipynb_checkpoints
+# Jupyter Notebook
+.ipynb_checkpoints/
 
-# Mac OS / Windows
+# macOS / Windows system files
 .DS_Store
 Thumbs.db
 
-# Build
+# Build artifacts
 build/
 dist/
 *.egg-info/
 
-# Others
+# Miscellaneous
 *.bak
 *.swp
 *.tmp

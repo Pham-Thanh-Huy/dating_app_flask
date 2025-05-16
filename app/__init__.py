@@ -14,7 +14,7 @@ logging.basicConfig(
 # INSTALL MYSQL_DB
 install_as_MySQLdb()
 
-# CONFIG DATABASE AND SWAGER API
+# CONFIG DATABASE AND SWAGGER API
 db = SQLAlchemy()
 migrate = Migrate()
 api = Api(title="API-APP-DATTING", version="1.0", description="API for app datting")
@@ -33,8 +33,10 @@ def create_app():
     #REGISTER BLUE_PRINT TO ROUTER
     from app.apis.v1.authen_api import authen_api
     from app.apis.v1.user_api import user_api
+    from app.apis.v1.profile_api import profile_api
     app.register_blueprint(authen_api,  url_prefix='/api/auth')
     app.register_blueprint(user_api, url_prefix='/api/user')
+    app.register_blueprint(profile_api, url_prefix='/api/profiles')
 
     # CHECK LOGIN DATABASE AND IMPORT CLASS TO MIGRATE DATABASE
     from app.models import User, Profile, Notification, Interaction, ProfileImage, Block, Conversation, Message
