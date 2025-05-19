@@ -6,6 +6,10 @@ class Gender(enum.Enum):
     FEMALE = 'female'
     OTHER = 'other'
 
+    @classmethod
+    def to_iterable(cls):
+        return [member.value for member in cls]
+
 class Profile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)

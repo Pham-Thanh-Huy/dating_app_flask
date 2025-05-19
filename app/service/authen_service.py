@@ -7,20 +7,17 @@ from app.schema.register_login_schema import RegisterLoginSchema
 from app.schema.user_update_password_schema import UserUpdatePasswordSchema
 from app.security.jwt_generation import generation_token
 from app.utils.constant import Constant
+from app.utils.response_util import internal_server_error_response
 
 
 def register_service():
     try:
         data = request.get_json()
+
         # ----> Validate
-        try:
-            schema = RegisterLoginSchema()
-            schema.load(data)
-        except ValidationError as e:
-            return {
-                "message": e.messages,
-                "code": Constant.API_STATUS.BAD_REQUEST
-            }
+        schema = RegisterLoginSchema()
+        schema.load(data)
+
 
         username = data['username']
         password = data['password']
@@ -54,25 +51,21 @@ def register_service():
             "code": Constant.API_STATUS.SUCCESS,
             "created_at": new_user.created_at,
         }
+    except ValidationError as e:
+        return {
+            "message": e.messages,
+            "code": Constant.API_STATUS.BAD_REQUEST
+        }
     except Exception as e:
         logging.error(f"[ERROR-TO-REGISTER] {e}")
-        return {
-            "message": Constant.API_STATUS.INTERNAL_SERVER_ERROR_MESSAGE,
-            "code": Constant.API_STATUS.INTERNAL_SERVER_ERROR
-        }
-
+        return internal_server_error_response()
 
 def login_service():
     try:
+        #-----> GET DATA AND VALIDATE
         data = request.get_json()
-        try:
-            schema = RegisterLoginSchema()
-            schema.load(data)
-        except ValidationError as e:
-            return {
-                "message": e.messages,
-                "code": Constant.API_STATUS.BAD_REQUEST
-            }
+        schema = RegisterLoginSchema()
+        schema.load(data)
 
         username = data['username']
         password = data['password']
@@ -102,26 +95,22 @@ def login_service():
             "message": Constant.LOGIN_SUCCESS,
             "code": Constant.API_STATUS.SUCCESS
         }
+    except ValidationError as e:
+        return {
+            "message": e.messages,
+            "code": Constant.API_STATUS.BAD_REQUEST
+        }
     except Exception as e:
         logging.error(f"[ERROR-TO-LOGIN] {e}")
-        return {
-            "message": Constant.API_STATUS.INTERNAL_SERVER_ERROR_MESSAGE,
-            "code": Constant.API_STATUS.INTERNAL_SERVER_ERROR
-        }
+        return internal_server_error_response()
 
 
 
 def reset_password_service():
     try:
         data = request.get_json()
-        try:
-            schema = UserUpdatePasswordSchema()
-            schema.load(data)
-        except ValidationError as e:
-            return {
-                "message": e.messages,
-                "code": Constant.API_STATUS.BAD_REQUEST
-            }
+        schema = UserUpdatePasswordSchema()
+        schema.load(data)
 
         user_by_id = db.session.query(User).filter_by(id=data['user_id']).first()
         if not user_by_id:
@@ -164,9 +153,11 @@ def reset_password_service():
             "message": Constant.CHANGE_PASSWORD_SUCCESS,
             "code": Constant.API_STATUS.SUCCESS
         }
+    except ValidationError as e:
+        return {
+            "message": e.messages,
+            "code": Constant.API_STATUS.BAD_REQUEST
+        }
     except Exception as e:
         logging.error(f"[ERROR-TO-DELETE-ACCOUNT] {e}")
-        return {
-            "message": Constant.API_STATUS.INTERNAL_SERVER_ERROR_MESSAGE,
-            "code": Constant.API_STATUS.INTERNAL_SERVER_ERROR
-        }
+        return internal_server_error_response()
