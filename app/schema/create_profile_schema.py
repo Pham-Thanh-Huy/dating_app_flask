@@ -10,4 +10,5 @@ class CreateProfileSchema(Schema):
     gender = fields.Str(required=True, validate=validate.OneOf(Gender.to_iterable(),
                                                                error="Giới tính vui lòng phải là 3 kiểu dữ liệu: 'male', 'female', 'other'!"),
                         error_messages={'required': 'Giới tính không đưọc để trống'})
-
+    location = fields.Str(required=False)
+    interests = fields.Raw(required=False)

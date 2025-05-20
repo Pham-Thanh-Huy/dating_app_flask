@@ -17,7 +17,7 @@ def create_profile_service():
         schema.load(data)
 
         user_id = data.get("user_id")
-        user = db.session.get(User).filter_by(user_id=user_id)
+        user = db.session.query(User).filter_by(id=user_id).first()
         if not user:
             return {
                 "message": f"Không tồn tại user với id là {user_id}",
@@ -31,6 +31,7 @@ def create_profile_service():
             age = data.get("age"),
             gender = data.get("gender"),
             location = data.get("location", None),
+            user_id = user_id,
             interests = data.get("interests", []),
             created_at=datetime.now()
         )
@@ -39,6 +40,7 @@ def create_profile_service():
         db.session.commit()
 
         return {
+            # "profile": profile.__dict__,
             "message": "Thêm profile thành công",
             "code": 200
         }
@@ -50,3 +52,6 @@ def create_profile_service():
     except Exception as e:
         logging.error(f"[ERROR-TO-CREATE-PROFILE] {e}")
         return internal_server_error_response()
+
+def update_profile():
+    data = request.get_json()
