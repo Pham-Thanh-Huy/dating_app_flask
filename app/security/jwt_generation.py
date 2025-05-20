@@ -19,7 +19,7 @@ def verify_token(token):
     try:
         data = jwt.decode(token, Config.SECRET_KEY, algorithms='HS256')
         return data, None
-    except jwt.InvalidTokenError:
-        return None, Constant.TOKEN_INVALID
     except jwt.ExpiredSignatureError:
         return None, Constant.TOKEN_EXPIRED
+    except jwt.InvalidTokenError:
+        return None, Constant.TOKEN_INVALID
