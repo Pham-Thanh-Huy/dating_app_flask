@@ -1,9 +1,11 @@
-import logging
+import logging, os, base64
+import uuid
 from datetime import datetime
 from flask import request
 from marshmallow import ValidationError
 from app.models import Profile
 from app.schema.create.create_profile_schema import CreateProfileSchema
+from app.schema.update.update_image_profile_schema import UpdateImageProfileSchema
 from app.schema.update.update_profile_schema import UpdateProfileSchema
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
@@ -44,8 +46,6 @@ def create_profile_service():
             interests=data.get("interests", []),
             created_at=datetime.now()
         )
-
-
 
         db.session.add(profile)
         db.session.commit()
@@ -110,14 +110,14 @@ def get_profile_by_user_id_service(user_id):
     try:
         profile = db.session.query(Profile).filter_by(user_id=user_id).first()
         if not profile:
-            return {
+            return{
                 "message": f"Không tồn tại profile có user_id là {user_id}",
                 "code": Constant.API_STATUS.BAD_REQUEST
             }
 
         schema = UpdateProfileSchema()
         profile_dict = schema.dump(profile)
-        return {
+        return{
             "profile":profile_dict ,
             "message": Constant.API_STATUS.SUCCESS_MESSAGE,
             "code": Constant.API_STATUS.SUCCESS
@@ -125,3 +125,53 @@ def get_profile_by_user_id_service(user_id):
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-PROFILE-BY-ID] {e}")
         return internal_server_error_response()
+
+def update_image_profile_service():
+    try:
+        user_id = request.form.get("user_id")
+        image = request.files.get("image")
+        data = {
+            "user_id": user_id,
+            "image": image
+        }
+        schema = UpdateImageProfileSchema()
+        schema.load(data)
+
+        profile = db.session.query(Profile).filter_by(user_id=user_id).first()
+        if not profile:
+            return {
+                "message": f"Không tồn tại profile có user_id là {user_id}",
+                "code": Constant.API_STATUS.BAD_REQUEST
+            }
+
+        # PROCESSING IMAGE
+        name, extension = os.path.splitext(image.filename)
+        new_file_name = uuid.uuid4().__str__() + extension
+
+        upload_dir = os.path.join('files', 'images', new_file_name)
+        image.save(upload_dir)
+        image.seek(0) #-----> POINTER TO FIRST PLACE BECAUSE AFTER SAVE FILE POINTER IS LAST PLACE
+
+        # CONVERT TO BASE 64
+        image_bytes = image.read()
+        base64_image = base64.b64encode(image_bytes).decode('utf-8')
+        print(base64_image)
+
+        return {
+            "image": {
+                "id": new_file_name,
+                "image": base64_image
+            },
+            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+            "code": Constant.API_STATUS.SUCCESS
+        }
+    except ValidationError as ve:
+       return {
+            "message": ve.messages_dict,
+            "code": Constant.API_STATUS.BAD_REQUEST
+        }
+    except Exception as e:
+        logging.error(f"[ERROR-TO-GET-PROFILE-BY-ID] {e}")
+        return internal_server_error_response()
+
+

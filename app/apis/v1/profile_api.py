@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify
 
 from app.security.security_config import authenticate_api
-from app.service.profile_service import create_profile_service, update_profile_service, get_profile_by_user_id_service
+from app.service.profile_service import create_profile_service, update_profile_service, get_profile_by_user_id_service, \
+    update_image_profile_service
 
 profile_api = Blueprint("profile_api", __name__)
 
@@ -26,4 +27,9 @@ def get_profile_by_user_id_api(user_id):
     return jsonify(response), response['code']
 
 
+@profile_api.route("/images", methods=['PUT'])
+@authenticate_api
+def update_image_profile_api():
+    response = update_image_profile_service()
+    return jsonify(response), response['code']
 
