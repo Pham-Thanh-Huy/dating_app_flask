@@ -23,7 +23,7 @@ def upgrade():
                existing_type=mysql.VARCHAR(length=20),
                type_=sa.String(length=255),
                existing_nullable=False)
-        batch_op.drop_index('password')
+        # batch_op.drop_index('password')
 
     # ### end Alembic commands ###
 

@@ -34,10 +34,11 @@ def create_app():
     from app.apis.v1.authen_api import authen_api
     from app.apis.v1.user_api import user_api
     from app.apis.v1.profile_api import profile_api
+    from app.apis.v1.interaction_api import interaction_api
     app.register_blueprint(authen_api,  url_prefix='/api/auth')
     app.register_blueprint(user_api, url_prefix='/api/user')
     app.register_blueprint(profile_api, url_prefix='/api/profiles')
-
+    app.register_blueprint(interaction_api, url_prefix='/api/interactions')
     # CHECK LOGIN DATABASE AND IMPORT CLASS TO MIGRATE DATABASE
     from app.models import User, Profile, Notification, Interaction, ProfileImage, Block, Conversation, Message
     with app.app_context():

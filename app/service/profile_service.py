@@ -79,7 +79,6 @@ def update_profile_service():
                 "code": Constant.API_STATUS.BAD_REQUEST
             }
 
-
         update_fields = [
             "name", "email", "avatar_url", "bio", "age", "gender", "location",
             "interests"
@@ -110,21 +109,22 @@ def get_profile_by_user_id_service(user_id):
     try:
         profile = db.session.query(Profile).filter_by(user_id=user_id).first()
         if not profile:
-            return{
+            return {
                 "message": f"Không tồn tại profile có user_id là {user_id}",
                 "code": Constant.API_STATUS.BAD_REQUEST
             }
 
         schema = UpdateProfileSchema()
         profile_dict = schema.dump(profile)
-        return{
-            "profile":profile_dict ,
+        return {
+            "profile": profile_dict,
             "message": Constant.API_STATUS.SUCCESS_MESSAGE,
             "code": Constant.API_STATUS.SUCCESS
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-PROFILE-BY-ID] {e}")
         return internal_server_error_response()
+
 
 def update_image_profile_service():
     try:
@@ -150,7 +150,7 @@ def update_image_profile_service():
 
         upload_dir = os.path.join('files', 'images', new_file_name)
         image.save(upload_dir)
-        image.seek(0) #-----> POINTER TO FIRST PLACE BECAUSE AFTER SAVE FILE POINTER IS LAST PLACE
+        image.seek(0)  # -----> POINTER TO FIRST PLACE BECAUSE AFTER SAVE FILE POINTER IS LAST PLACE
 
         # CONVERT TO BASE 64
         image_bytes = image.read()
@@ -165,13 +165,11 @@ def update_image_profile_service():
             "message": Constant.API_STATUS.SUCCESS_MESSAGE,
             "code": Constant.API_STATUS.SUCCESS
         }
-    except ValidationError as ve:
-       return {
-            "message": ve.messages_dict,
+    except ValidationError as e:
+        return {
+            "message": e.messages,
             "code": Constant.API_STATUS.BAD_REQUEST
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-PROFILE-BY-ID] {e}")
         return internal_server_error_response()
-
-

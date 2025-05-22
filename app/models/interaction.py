@@ -7,3 +7,4 @@ class Interaction(db.Model):
     updated_at = db.Column(db.DateTime)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    profile_id = db.Column(db.Integer, db.ForeignKey('profile.id'))
