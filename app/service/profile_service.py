@@ -49,8 +49,9 @@ def create_profile_service():
 
         db.session.add(profile)
         db.session.commit()
+
         return {
-            "profile": schema.dump(profile),
+            "profile": profile.to_dict(),
             "message": "Thêm profile thành công",
             "code": 200
         }
@@ -91,7 +92,7 @@ def update_profile_service():
         db.session.commit()
 
         return {
-            "profile": schema.dump(profile),
+            "profile": profile.to_dict(),
             "message": "update profile thành công",
             "code": 200
         }
@@ -114,10 +115,8 @@ def get_profile_by_user_id_service(user_id):
                 "code": Constant.API_STATUS.BAD_REQUEST
             }
 
-        schema = UpdateProfileSchema()
-        profile_dict = schema.dump(profile)
         return {
-            "profile": profile_dict,
+            "profile": profile.to_dict(),
             "message": Constant.API_STATUS.SUCCESS_MESSAGE,
             "code": Constant.API_STATUS.SUCCESS
         }

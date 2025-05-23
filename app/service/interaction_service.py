@@ -1,12 +1,10 @@
 import logging, datetime
-from tabnanny import check
-
 from marshmallow import ValidationError
 from sqlalchemy import text
-
 from app import db
 from flask import request
 from app.schema.create.add_interaction_schema import AddInteractionSchema
+from app.schema.update.update_profile_schema import UpdateProfileSchema
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
 from app.models import User, Profile, Interaction
@@ -48,7 +46,7 @@ def add_interaction_service():
         # PROCESSING INTERACTION
         interaction = db.session.query(Interaction).filter_by(user_id=user_id, profile_id=profile_id).first()
         if interaction:
-            interaction.is_like=is_like
+            interaction.is_like = is_like
         else:
             interaction = Interaction(
                 is_like=is_like,
@@ -90,4 +88,33 @@ def add_interaction_service():
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-ADD-INTERACTION] {e}")
+        return internal_server_error_response()
+
+
+def get_list_interaction_by_user_service(user_id: int, is_like: bool):
+    try:
+        user = db.session.query(User).filter_by(id=user_id).first()
+        schema = UpdateProfileSchema(many=True)
+        if not user:
+            return {"message": f"Không tồn tại user với id là {user_id}", "code": Constant.API_STATUS.BAD_REQUEST}
+
+        # ---> GET LIST INTERACTION BY USER
+        interaction_list = db.session.query(Interaction).filter_by(user_id=user_id, is_like=is_like).all()
+        if not interaction_list:
+            return {
+                "message": f"user_id `{user_id}` chưa tương tác {'Like' if is_like == True else 'DisLike'} với bất kì profile nào",
+                "code": Constant.API_STATUS.BAD_REQUEST}
+
+        profile_list = [db.session.query(Profile).filter_by(id=interaction.profile_id).first() for interaction in
+                        interaction_list]
+        profile_list_map_to_dict = [profile.to_dict() for profile in profile_list]
+
+        return {
+            "is_like": is_like,
+            "profile": profile_list_map_to_dict,
+            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+            "code": Constant.API_STATUS.SUCCESS
+        }
+    except Exception as e:
+        logging.error(f"[ERROR-TO-GET-LIST-INTERACTION-BY-USER] {e}")
         return internal_server_error_response()
