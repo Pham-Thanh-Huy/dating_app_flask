@@ -8,3 +8,5 @@ conversation_api = Blueprint('conversation', __name__)
 def get_conversation_by_id_api(user_id: int):
     response = get_conversation_by_id_service(user_id)
     return jsonify(response), response['code']
+
+

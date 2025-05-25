@@ -52,3 +52,6 @@ def get_conversation_by_id_service(user_id: int):
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-CONVERSATION-BY-ID] {e}")
         return internal_server_error_response()
+
+
+# def
