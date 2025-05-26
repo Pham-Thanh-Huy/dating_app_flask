@@ -8,5 +8,3 @@ class SendMessageSchema(Schema):
                                                                     'strict': 'Id người gửi phải là kiểu số'})
     reveive = fields.Int(required=True, strict=True, error_messages={'required': 'Id người nhận không được để trống',
                                                                     'strict': 'Id người nhận phải là kiểu số'})
-    id_conversation = fields.Int(required=True, strict=True, error_messages={'required': 'Id đoạn hội thoại không được để trống',
-                                                                    'strict': 'Id đoạn hội thoại phải là kiểu số'})
