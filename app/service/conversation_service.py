@@ -7,7 +7,7 @@ from sqlalchemy.sql.operators import or_, and_
 from app import db
 from app.models import User, Conversation, Message
 from app.schema.SendMessageSchema import SendMessageSchema
-from app.schema.get_and_unmatch_schema import GetAndUnmatchSchema
+from app.schema.unmatch_schema import UnmatchSchema
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
 
@@ -176,6 +176,52 @@ def get_list_message_by_user_id_service(conversation_id: int, user_id: int):
             "data": response,
             "code": Constant.API_STATUS.SUCCESS,
             "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+        }
+    except Exception as e:
+        logging.error(f"[ERROR-TO-GET-LIST-MESSAGE-BY-USER-ID] {e}")
+        return internal_server_error_response()
+
+
+# ---> DELETE CONVERSATION
+def unmatch_user_service():
+    try:
+        data = request.get_json()
+        schema = UnmatchSchema()
+        schema.load(data)
+
+        user_id = data['user_id']
+        conversation_id = data['conversation_id']
+
+        # -----> CHECK EXIST CONVERSATION ID WITH USER_ID
+        conversation = db.session.query(Conversation).filter(
+            and_(
+                Conversation.id == conversation_id,
+                or_(
+                    Conversation.user_one_id == user_id,
+                    Conversation.user_two_id == user_id
+                )
+            )
+        ).first()
+
+        if not conversation:
+            return {
+                "message": f"Không tồn tại đoạn hội thoại với id là {conversation_id} của user_id {user_id}",
+                "code": Constant.API_STATUS.NOT_FOUND
+            }
+
+        # -----> IF EXIST CONVERSATION ID WITH USER_ID
+        message_list = db.session.query(Message).filter_by(Message.conversation_id == conversation_id).all()
+        db.session.delete(message_list)
+        db.session.delete(conversation)
+        db.session.commit()
+        return {
+            "message": "unmacth thành công",
+            "code": Constant.API_STATUS.SUCCESS
+        }
+    except ValidationError as e:
+        return {
+            "message": e.messages,
+            "code": Constant.API_STATUS.BAD_REQUEST
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-LIST-MESSAGE-BY-USER-ID] {e}")
