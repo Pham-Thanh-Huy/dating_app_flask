@@ -7,6 +7,7 @@ from sqlalchemy.sql.operators import or_, and_
 from app import db
 from app.models import User, Conversation, Message
 from app.schema.SendMessageSchema import SendMessageSchema
+from app.schema.get_and_unmatch_schema import GetAndUnmatchSchema
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
 
@@ -114,8 +115,22 @@ def send_message_service():
         db.session.add(chat)
         db.session.commit()
 
-        return {
+        # ----> GET LIST MESSAGE IN CONVERSATION ORDER BY DESC
+        message_list = db.session.query(Message).filter_by(conversation_id=conversation.id).order_by(
+            Message.created_at.desc()).all()
 
+        conversations = [{
+            "sender": message.sender_id,
+            "reveive": sender.id if message.sender_id != sender.id else reveive.id,
+            "message": message.content,
+            "latest_time": message.created_at,
+            "id_conversation": conversation.id
+        } for message in message_list]
+
+        return {
+            "code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+            "conversations": conversations
         }
     except ValidationError as e:
         return {
@@ -124,4 +139,44 @@ def send_message_service():
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-SEND-MESSAGE] {e}")
+        return internal_server_error_response()
+
+
+def get_list_message_by_user_id_service(conversation_id: int, user_id: int):
+    try:
+        user = db.session.query(User).filter_by(id=user_id).first()
+        if not user:
+            return {
+                "message": f"Không tồn tại user user_id là `{user_id}`!",
+                "code": Constant.API_STATUS.BAD_REQUEST
+            }
+
+        conversation_not_found_response = {
+            "message": f"Chưa có đoạn hội thoại nào với id là {conversation_id}",
+            "code": Constant.API_STATUS.NOT_FOUND
+        }
+        conversation = db.session.query(Conversation).filter_by(id=conversation_id).first()
+        if not conversation:
+            return conversation_not_found_response
+
+        # ----> GET LIST MESSAGE
+        messages = db.session.query(Message).filter_by(conversation_id=conversation_id, sender_id=user_id).order_by(
+            Message.created_at.desc()).all()
+        if not messages:
+            return conversation_not_found_response
+
+        response = [{
+            "id": message.id,
+            "content": message.content,
+            "sender_id": message.sender_id
+        }
+            for message in messages]
+
+        return {
+            "data": response,
+            "code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+        }
+    except Exception as e:
+        logging.error(f"[ERROR-TO-GET-LIST-MESSAGE-BY-USER-ID] {e}")
         return internal_server_error_response()
