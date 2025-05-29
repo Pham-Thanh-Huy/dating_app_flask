@@ -9,6 +9,7 @@ from app.models import User, Conversation, Message
 from app.schema.SendMessageSchema import SendMessageSchema
 from app.schema.unmatch_schema import UnmatchSchema
 from app.utils.constant import Constant
+from app.utils.db_util import delete_list
 from app.utils.response_util import internal_server_error_response
 
 
@@ -192,6 +193,18 @@ def unmatch_user_service():
         user_id = data['user_id']
         conversation_id = data['conversation_id']
 
+        user = db.session.query(User).filter_by(id=user_id).first()
+        if not user:
+            return dict(message=f"Không tồn tại user có ID là `{user_id}`!", code=Constant.API_STATUS.BAD_REQUEST)
+
+        conversation_not_found_response = {
+            "message": f"Chưa có đoạn hội thoại nào với id là {conversation_id}",
+            "code": Constant.API_STATUS.NOT_FOUND
+        }
+        conversation = db.session.query(Conversation).filter_by(id=conversation_id).first()
+        if not conversation:
+            return conversation_not_found_response
+
         # -----> CHECK EXIST CONVERSATION ID WITH USER_ID
         conversation = db.session.query(Conversation).filter(
             and_(
@@ -210,8 +223,8 @@ def unmatch_user_service():
             }
 
         # -----> IF EXIST CONVERSATION ID WITH USER_ID
-        message_list = db.session.query(Message).filter_by(Message.conversation_id == conversation_id).all()
-        db.session.delete(message_list)
+        message_list = db.session.query(Message).filter_by(conversation_id=conversation.id).all()
+        delete_list(message_list)
         db.session.delete(conversation)
         db.session.commit()
         return {

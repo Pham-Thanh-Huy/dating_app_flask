@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, make_response
 
 from app.security.security_config import authenticate_api
 from app.service.conversation_service import get_conversation_by_id_service, send_message_service, \
-    get_list_message_by_user_id_service
+    get_list_message_by_user_id_service, unmatch_user_service
 from app.utils.constant import Constant
 
 conversation_api = Blueprint('conversation', __name__)
@@ -39,4 +39,11 @@ def get_list_message_by_user_id_api(conversation_id: int):
             "message": "userId phải là số nguyên"
         }, Constant.API_STATUS.BAD_REQUEST)
     response = get_list_message_by_user_id_service(conversation_id, user_id)
+    return jsonify(response), response['code']
+
+
+@conversation_api.route("/unmatch", methods=['DELETE'])
+@authenticate_api
+def unmatch_user_api():
+    response = unmatch_user_service()
     return jsonify(response), response['code']

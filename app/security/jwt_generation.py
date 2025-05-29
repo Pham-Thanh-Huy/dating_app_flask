@@ -1,3 +1,5 @@
+import logging
+
 import jwt, datetime
 
 from app.config import Config
@@ -23,3 +25,13 @@ def verify_token(token):
         return None, Constant.TOKEN_EXPIRED
     except jwt.InvalidTokenError:
         return None, Constant.TOKEN_INVALID
+
+
+def parse_token_get_username(token):
+    try:
+        data = jwt.decode(token, Config.SECRET_KEY, algorithms='HS256')
+        return data['user'], False
+    except Exception as e:
+        logging.error(f"ERROR-TO-PARSE-TOKEN-JWT: {e}")
+        return Constant.ERROR_TO_PARSE_TOKEN, True
+
