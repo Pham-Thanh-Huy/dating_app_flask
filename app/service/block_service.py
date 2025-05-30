@@ -68,9 +68,11 @@ def get_list_block_service():
 
         block_list = db.session.query(Block).filter_by(user_id=user.id).offset(index).limit(count).all()
 
-        user_is_blocked_list = [db.session.query(User).filter_by(id=block.block_user_id).first() for block in block_list]
+        user_is_blocked_list = [db.session.query(User).filter_by(id=block.block_user_id).first() for block in
+                                block_list]
 
-        profile_by_user_blocked_list = [db.session.query(Profile).filter_by(user_id=u.id).first()  for u in user_is_blocked_list]
+        profile_by_user_blocked_list = [db.session.query(Profile).filter_by(user_id=u.id).first() for u in
+                                        user_is_blocked_list]
 
         profile_blocked_to_dict = [profile.to_dict() for profile in profile_by_user_blocked_list]
 
@@ -86,4 +88,40 @@ def get_list_block_service():
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-BLOCK-USER] {e}")
+        return internal_server_error_response()
+
+
+def unblock_user_service(block_user_id: int):
+    try:
+        data, err = parse_token_get_username(request.headers.get('Authorization', '')[len('Bearer '):].strip())
+
+        if err:
+            return dict(message=data, code=Constant.API_STATUS.INTERNAL_SERVER_ERROR)
+
+        user = db.session.query(User).filter_by(username=data).first()
+
+        user_is_blocked = db.session.query(User).filter_by(id=block_user_id).first()
+        if not user_is_blocked:
+            return dict(message=f"Không tồn tại user bị block có ID là `{block_user_id}`!", code=Constant.API_STATUS.BAD_REQUEST)
+
+        if user.id == user_is_blocked.id:
+            return {
+                "message": "Bạn không thể hủy block chính mình",
+                "code": Constant.API_STATUS.BAD_REQUEST
+            }
+
+        block = db.session.query(Block).filter_by(user_id=user.id, block_user_id=block_user_id).first()
+
+        if not block:
+            return dict(message=f"user {user.username} không block user có id là {user_is_blocked.id}",
+                        code=Constant.API_STATUS.BAD_REQUEST)
+
+        db.session.delete(block)
+        db.session.commit()
+        return {
+            "code": Constant.API_STATUS.SUCCESS,
+            "message": "Bỏ block thành công"
+        }
+    except Exception as e:
+        logging.error(f"[ERROR-TO-UNBLOCK-USER] {e}")
         return internal_server_error_response()

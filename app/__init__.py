@@ -37,12 +37,15 @@ def create_app():
     from app.apis.v1.interaction_api import interaction_api
     from app.apis.v1.conversation_api import conversation_api
     from app.apis.v1.block_api import block_api
+    from app.apis.v1.notification_api import notification_api
+
     app.register_blueprint(authen_api,  url_prefix='/api/auth')
     app.register_blueprint(user_api, url_prefix='/api/user')
     app.register_blueprint(profile_api, url_prefix='/api/profiles')
     app.register_blueprint(interaction_api, url_prefix='/api/interactions')
     app.register_blueprint(conversation_api, url_prefix='/api/conversations')
     app.register_blueprint(block_api, url_prefix='/api/blocks')
+    app.register_blueprint(notification_api, url_prefix='/api/notifications')
     # CHECK LOGIN DATABASE AND IMPORT CLASS TO MIGRATE DATABASE
     from app.models import User, Profile, Notification, Interaction, ProfileImage, Block, Conversation, Message
     with app.app_context():
