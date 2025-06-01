@@ -8,6 +8,8 @@ class Constant:
     DELETE_SUCCESS = "Xóa thành công!"
     CHANGE_PASSWORD_SUCCESS = "Đổi mật khẩu thành công!"
 
+    LOCATION_URL = "https://nominatim.openstreetmap.org/search"
+
     class API_STATUS:
         INTERNAL_SERVER_ERROR = 500
         SUCCESS = 200
