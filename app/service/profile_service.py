@@ -52,7 +52,7 @@ def create_profile_service():
         db.session.flush()
 
         # ----> UPDATE LOCATION
-        result = get_lat_lng_by_address(data.get("gender"))
+        result = get_lat_lng_by_address(data.get("location"))
         if result is not None:
             lat, lng = result
             location_rela = Location(
@@ -100,7 +100,28 @@ def update_profile_service():
 
         for field in update_fields:
             if field in data:
-                setattr(profile, field, data.get(field))
+                if field == "location":
+                    result = get_lat_lng_by_address(data.get("location"))
+                    if result is not None:
+                        lat, lng = result
+
+                        existing_location = db.session.query(Location).filter_by(profile_id=profile.id).first()
+
+                        if existing_location:
+                            existing_location.lat = lat
+                            existing_location.lng = lng
+                        else:
+                            location_rela = Location(
+                                lat=lat,
+                                lng=lng,
+                                profile_id=profile.id,
+                            )
+                            db.session.add(location_rela)
+
+                    profile.location = data.get("location")
+
+                else:
+                    setattr(profile, field, data.get(field))
 
         db.session.commit()
 

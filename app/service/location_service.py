@@ -4,13 +4,13 @@ from flask_restx import ValidationError
 from sqlalchemy.sql.expression import text
 
 from app import db
-from app.models import Location
+from app.models import Profile
 from app.schema.location_schema import LocationSchema
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
 
 
-def get_list_user_near_by():
+def get_list_user_near_by_service():
     try:
         data = request.get_json()
         schema = LocationSchema()
@@ -35,8 +35,20 @@ def get_list_user_near_by():
         }
 
         list_location_nearby = db.session.execute(query, params).fetchall()
+        if not list_location_nearby:
+            return {
+                "message": f"Không có user nào hiện tại  gần trong bán kính {data['radius']}km!",
+                "code": Constant.API_STATUS.FORBIDDEN
+            }
 
-        return None
+        list_profile_nearby = [db.session.query(Profile).filter_by(id=location.profile_id).first() for location in
+                               list_location_nearby]
+        list_profile_map_to_dict = [profile.to_dict() for profile in list_profile_nearby]
+        return {
+            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+            "code": Constant.API_STATUS.SUCCESS,
+            "nearby": list_profile_map_to_dict
+        }
     except ValidationError as e:
         return {
             "message": e.messages,
