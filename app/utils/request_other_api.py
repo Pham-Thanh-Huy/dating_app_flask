@@ -1,9 +1,7 @@
 import logging
 
 import requests
-
 from app.utils.constant import Constant
-
 
 def get_lat_lng_by_address(address: str):
     try:

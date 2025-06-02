@@ -6,3 +6,4 @@ from .interaction import Interaction
 from .conversation import Conversation
 from .block import Block
 from .message import Message
+from .location import Location

@@ -125,15 +125,15 @@ Copy
 Edit
 SELECT *,
        (6371 * ACOS(
-           COS(RADIANS(:user_lat)) * COS(RADIANS(lat)) *
-           COS(RADIANS(lng) - RADIANS(:user_lng)) +
-           SIN(RADIANS(:user_lat)) * SIN(RADIANS(lat))
+           COS(RADIANS(:user_lat)) * COS(RADIANS(CAST(lat AS DECIMAL(10,6)))) *
+           COS(RADIANS(CAST(lng AS DECIMAL(10,6))) - RADIANS(:user_lng)) +
+           SIN(RADIANS(:user_lat)) * SIN(RADIANS(CAST(lat AS DECIMAL(10,6))))
        )) AS distance
-FROM profile
+FROM location
 HAVING distance < 10
 ORDER BY distance ASC;
-6371 là bán kính Trái Đất tính theo km
 
+6371 là bán kính Trái Đất tính theo km
 :user_lat và :user_lng là tọa độ người dùng
 
 🛠 Tóm tắt cách triển khai:

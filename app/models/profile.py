@@ -27,7 +27,7 @@ class Profile(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
     profile_image = db.relationship('ProfileImage', backref='profile')
-    location = db.relationship('location', backref='location')
+    location_relation = db.relationship('Location', backref='location')
 
     def to_dict(self):
         result = {}

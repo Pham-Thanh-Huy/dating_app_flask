@@ -3,11 +3,12 @@ import uuid
 from datetime import datetime
 from flask import request
 from marshmallow import ValidationError
-from app.models import Profile
+from app.models import Profile, Location
 from app.schema.create.create_profile_schema import CreateProfileSchema
 from app.schema.update.update_image_profile_schema import UpdateImageProfileSchema
 from app.schema.update.update_profile_schema import UpdateProfileSchema
 from app.utils.constant import Constant
+from app.utils.request_other_api import get_lat_lng_by_address
 from app.utils.response_util import internal_server_error_response
 from app import db
 from app.models import User
@@ -48,8 +49,20 @@ def create_profile_service():
         )
 
         db.session.add(profile)
-        db.session.commit()
+        db.session.flush()
 
+        # ----> UPDATE LOCATION
+        result = get_lat_lng_by_address(data.get("gender"))
+        if result is not None:
+            lat, lng = result
+            location_rela = Location(
+                lat=lat,
+                lng=lng,
+                profile_id=profile.id,
+            )
+            db.session.add(location_rela)
+
+        db.session.commit()
         return {
             "profile": profile.to_dict(),
             "message": "Thêm profile thành công",

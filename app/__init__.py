@@ -50,7 +50,7 @@ def create_app():
     app.register_blueprint(location_api, url_prefix='/api/locations')
 
     # CHECK LOGIN DATABASE AND IMPORT CLASS TO MIGRATE DATABASE
-    from app.models import User, Profile, Notification, Interaction, ProfileImage, Block, Conversation, Message
+    from app.models import User, Profile, Notification, Interaction, ProfileImage, Block, Conversation, Message, Location
     with app.app_context():
         try:
             with db.engine.connect() as connect:

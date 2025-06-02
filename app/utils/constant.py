@@ -9,6 +9,7 @@ class Constant:
     CHANGE_PASSWORD_SUCCESS = "Đổi mật khẩu thành công!"
 
     LOCATION_URL = "https://nominatim.openstreetmap.org/search"
+    # LOCATION_URL = "https://google.com"
 
     class API_STATUS:
         INTERNAL_SERVER_ERROR = 500
