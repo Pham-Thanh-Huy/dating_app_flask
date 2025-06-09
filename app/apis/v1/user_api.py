@@ -9,4 +9,5 @@ user_api = Blueprint("user_api", __name__)
 @authenticate_api
 def delete_account_api(user_id):
     response = delete_account_service(user_id)
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code

@@ -29,10 +29,12 @@ def get_notification_api():
         return err
 
     response = get_notification_service(user_id, index, count)
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code
 
 @notification_api.route('/<int:id>', methods=['DELETE'])
 @authenticate_api
 def delete_notification_api(id: int):
     response = delete_notification_service(id)
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code

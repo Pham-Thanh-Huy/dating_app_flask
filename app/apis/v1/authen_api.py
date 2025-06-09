@@ -8,17 +8,20 @@ authen_api = Blueprint('authen_api', __name__)
 @authen_api.route('/register', methods=['POST'])
 def register_api():
     response = register_service()
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code
 
 
 @authen_api.route('/sign-in', methods=['POST'])
 def login_api():
     response = login_service()
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code
 
 
 @authen_api.route('reset-password', methods=['POST'])
 @authenticate_api
 def reset_password_api():
     response = reset_password_service()
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code

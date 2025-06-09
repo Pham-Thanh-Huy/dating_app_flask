@@ -9,18 +9,22 @@ block_api=Blueprint('Block', __name__)
 @authenticate_api
 def block_user_api():
     response = block_user_service()
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code
 
 
 @block_api.route('/', methods=['GET'])
 @authenticate_api
 def get_list_block_api():
     response = get_list_block_service()
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code
 
 
 @block_api.route('/<int:block_user_id>', methods=['DELETE'])
 @authenticate_api
 def unblock_user_api(block_user_id: int):
     response = unblock_user_service(block_user_id)
-    return jsonify(response), response['code']
+    code = int(response['code'])
+    return jsonify(response), code
+
