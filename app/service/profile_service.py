@@ -12,6 +12,7 @@ from app.utils.request_other_api import get_lat_lng_by_address
 from app.utils.response_util import internal_server_error_response
 from app import db
 from app.models import User
+from app.utils.validate_util import parse_validation_error
 
 
 def create_profile_service():
@@ -25,15 +26,17 @@ def create_profile_service():
 
         if profile:
             return {
-                "message": f"Đã tồn tại profile có user_id là {user_id}",
-                "code": 400
+                "message": Constant.API_STATUS.USER_EXISTED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_EXISTED
             }
 
         user = db.session.query(User).filter_by(id=user_id).first()
         if not user:
             return {
-                "message": f"Không tồn tại user với id là {user_id}",
-                "code": 400
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
         profile = Profile(
             name=data.get("name"),
@@ -61,18 +64,18 @@ def create_profile_service():
                 profile_id=profile.id,
             )
             db.session.add(location_rela)
-
         db.session.commit()
+
+
         return {
             "profile": profile.to_dict(),
-            "message": "Thêm profile thành công",
-            "code": 200
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+        error_dict = parse_validation_error(e)
+        return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-CREATE-PROFILE] {e}")
         return internal_server_error_response()
@@ -89,8 +92,9 @@ def update_profile_service():
 
         if not profile:
             return {
-                "message": f"Không tồn tại profile có user_id là {user_id}",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         update_fields = [
@@ -127,8 +131,9 @@ def update_profile_service():
 
         return {
             "profile": profile.to_dict(),
-            "message": "update profile thành công",
-            "code": 200
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "code": Constant.API_STATUS.OK
         }
     except ValidationError as e:
         return {
@@ -145,14 +150,16 @@ def get_profile_by_user_id_service(user_id):
         profile = db.session.query(Profile).filter_by(user_id=user_id).first()
         if not profile:
             return {
-                "message": f"Không tồn tại profile có user_id là {user_id}",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         return {
             "profile": profile.to_dict(),
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
-            "code": Constant.API_STATUS.SUCCESS
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "code": Constant.API_STATUS.OK
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-PROFILE-BY-ID] {e}")
@@ -199,10 +206,8 @@ def update_image_profile_service():
             "code": Constant.API_STATUS.SUCCESS
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+       error_dict = parse_validation_error(e)
+       return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-PROFILE-BY-ID] {e}")
         return internal_server_error_response()

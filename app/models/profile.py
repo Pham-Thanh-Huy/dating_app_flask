@@ -1,5 +1,9 @@
 import enum
+
+import pytz
+
 from app import db
+from app.utils.constant import Constant
 
 
 class Gender(enum.Enum):
@@ -31,9 +35,22 @@ class Profile(db.Model):
 
     def to_dict(self):
         result = {}
+        # Đảm bảo rằng bạn đã lấy đối tượng datetime với múi giờ
+        vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
         for column in self.__table__.columns:
             value = getattr(self, column.name)
-            if isinstance(value, Gender):
+
+            if (column.name == "created_at" or column.name == "updated_at") and value is not None:
+                # Chuyển đổi về múi giờ Việt Nam
+                if value.tzinfo is None:  # Nếu datetime không có thông tin múi giờ
+                    value = pytz.utc.localize(value)  # Giả sử là UTC, bạn có thể thay đổi theo cách khác nếu cần
+                value = value.astimezone(vietnam_tz)
+
+                # Sau khi chuyển đổi, format lại thời gian
+                result[column.name] = value.strftime('%Y-%m-%d %H:%M:%S')
+
+            elif isinstance(value, Gender):
                 result[column.name] = value.name
             else:
                 result[column.name] = value

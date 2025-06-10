@@ -11,5 +11,5 @@ location_api = Blueprint('Location', __name__)
 @authenticate_api
 def get_list_user_near_by_api():
     response = get_list_user_near_by_service()
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code

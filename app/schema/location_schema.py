@@ -5,24 +5,33 @@ def validate_float(value):
         normalized = value.replace(',', '.')
         float(normalized)
     except (ValueError, AttributeError):
-        raise ValidationError("Giá trị phải là một số hợp lệ.")
+        raise ValidationError("Parameter value is invalid")  # Chuẩn lỗi 1004
 
 class LocationSchema(Schema):
     lat = fields.Str(
         required=True,
         strict=True,
         validate=validate_float,
-        error_messages={'required': "lat không được để trống"}
+        error_messages={
+            'required': "Parameter is not enough",  # 1002
+            'invalid': "Parameter type is invalid"  # 1003
+        }
     )
     lng = fields.Str(
         required=True,
         strict=True,
         validate=validate_float,
-        error_messages={'required': "lng không được để trống"}
+        error_messages={
+            'required': "Parameter is not enough",
+            'invalid': "Parameter type is invalid"
+        }
     )
     radius = fields.Str(
         required=True,
         strict=True,
         validate=validate_float,
-        error_messages={'required': "radius không được để trống"}
+        error_messages={
+            'required': "Parameter is not enough",
+            'invalid': "Parameter type is invalid"
+        }
     )

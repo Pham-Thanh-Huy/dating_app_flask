@@ -14,7 +14,7 @@ def get_lat_lng_by_address(address: str):
             "User-Agent": "dating-app"
         }
 
-        response = requests.get(Constant.LOCATION_URL, params=param, headers=headers)
+        response = requests.get(Constant.LOCATION_URL, params=param, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
         if not data:

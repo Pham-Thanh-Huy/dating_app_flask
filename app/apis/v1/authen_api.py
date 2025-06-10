@@ -8,14 +8,14 @@ authen_api = Blueprint('authen_api', __name__)
 @authen_api.route('/register', methods=['POST'])
 def register_api():
     response = register_service()
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
 
 
 @authen_api.route('/sign-in', methods=['POST'])
 def login_api():
     response = login_service()
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
 
 
@@ -23,5 +23,5 @@ def login_api():
 @authenticate_api
 def reset_password_api():
     response = reset_password_service()
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code

@@ -9,7 +9,7 @@ block_api=Blueprint('Block', __name__)
 @authenticate_api
 def block_user_api():
     response = block_user_service()
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
 
 
@@ -17,7 +17,7 @@ def block_user_api():
 @authenticate_api
 def get_list_block_api():
     response = get_list_block_service()
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
 
 
@@ -25,6 +25,6 @@ def get_list_block_api():
 @authenticate_api
 def unblock_user_api(block_user_id: int):
     response = unblock_user_service(block_user_id)
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
 

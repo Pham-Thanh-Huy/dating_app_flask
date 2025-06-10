@@ -1,3 +1,6 @@
+import pytz
+
+
 class Constant:
     ADD_USER_SUCCESS = "Thêm người dùng thành công!"
     USERNAME_OR_PASSWORD_INCORRECT = "Tài khoản hoặc mật khẩu không đúng !"
@@ -69,7 +72,7 @@ class Constant:
 
         # ----> Số lượng paramater không đầy đủ
         PARAMETER_IS_NOT_ENOUGH = "1002"
-        PARAMETER_iS_NOT_ENOUGH_MESSAGE = "Parameter is not enough"
+        PARAMETER_IS_NOT_ENOUGH_MESSAGE = "Parameter is not enough"
 
         # ----> Kiểu tham số không đúng đắn
         PARAMETER_TYPE_IS_INVALID = "1003"

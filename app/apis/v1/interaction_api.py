@@ -9,7 +9,7 @@ interaction_api = Blueprint('interaction', __name__)
 @interaction_api.route('/', methods=['POST'])
 def add_interaction_api():
     response = add_interaction_service()
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
 
 
@@ -17,8 +17,8 @@ def add_interaction_api():
 @authenticate_api
 def get_list_interaction_by_user_api(user_id, is_like):
     if is_like not in (0, 1):
-        return jsonify({'code': '400', 'message': 'is_like phải là 0 hoặc 1'}), 400
+        return jsonify({'code': '1003', 'message': 'Parameter type is invalid'}), 400
     is_like = bool(is_like)
     response = get_list_interaction_by_user_service(user_id, is_like)
-    code = int(response['code'])
+    code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
