@@ -17,7 +17,13 @@ from app.utils.validate_util import parse_validation_error
 
 def create_profile_service():
     try:
-        data = request.json
+        data = request.get_json(silent=True)
+        if data is None:
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
         schema = CreateProfileSchema()
         schema.load(data)
 
@@ -83,7 +89,7 @@ def create_profile_service():
 
 def update_profile_service():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         schema = UpdateProfileSchema()
         schema.load(data)
 
@@ -136,10 +142,8 @@ def update_profile_service():
             "code": Constant.API_STATUS.OK
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+        error_dict = parse_validation_error(e)
+        return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-UPDATE-PROFILE] {e}")
         return internal_server_error_response()

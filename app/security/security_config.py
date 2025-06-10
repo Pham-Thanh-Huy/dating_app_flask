@@ -12,8 +12,8 @@ def authenticate_api(f):
 
         if not auth_header or not auth_header.startswith("Bearer "):
             return make_response({
-                "message": "Bạn chưa cung cấp token xác thực hợp lệ! Vui lòng xác thực!",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.TOKEN_IS_INVALID_MESSAGE,
+                "code": Constant.API_STATUS.TOKEN_IS_INVALID
             }, Constant.API_STATUS.BAD_REQUEST)
 
         token = auth_header.split(' ')[1]
@@ -22,8 +22,8 @@ def authenticate_api(f):
 
         if err:
             return make_response({
-                "message": err,
-                "code": Constant.API_STATUS.FORBIDDEN
+                "message": Constant.API_STATUS.TOKEN_IS_INVALID_MESSAGE,
+                "code": Constant.API_STATUS.TOKEN_IS_INVALID
             }, Constant.API_STATUS.FORBIDDEN)
 
         return f(*args, **kwargs)
