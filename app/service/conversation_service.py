@@ -11,6 +11,7 @@ from app.schema.unmatch_schema import UnmatchSchema
 from app.utils.constant import Constant
 from app.utils.db_util import delete_list
 from app.utils.response_util import internal_server_error_response
+from app.utils.validate_util import parse_validation_error
 
 
 def get_conversation_by_id_service(user_id: int):
@@ -18,9 +19,11 @@ def get_conversation_by_id_service(user_id: int):
         user = db.session.query(User).filter_by(id=user_id).first()
         if not user:
             return {
-                "message": f"Không tồn tại user user_id là `{user_id}`!",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
+
         # CREATE response
         response = []
 
@@ -34,8 +37,9 @@ def get_conversation_by_id_service(user_id: int):
 
         if not conversation_list:
             return {
-                "message": f"user_id `{user_id} chưa có bất kì 1 đoạn hội thoại nào`",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
             }
 
         # GET LAST MESSAGE
@@ -46,13 +50,14 @@ def get_conversation_by_id_service(user_id: int):
             response.append(
                 {
                     "conversation": conversation.to_dict(),
-                    "last_message": last_message.content if last_message else f"Không có tin nhắn nào vì user có id là `{user_id}` chưa nhắn"
+                    "last_message": last_message.content if last_message else Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE
                 }
             )
         return {
             "chat": response,
-            "code": Constant.API_STATUS.SUCCESS,
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE
+            "code": Constant.API_STATUS.OK,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-CONVERSATION-BY-ID] {e}")
@@ -61,7 +66,13 @@ def get_conversation_by_id_service(user_id: int):
 
 def send_message_service():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
+        if data is None:
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
         schema = SendMessageSchema()
         schema.load(data)
 
@@ -72,15 +83,17 @@ def send_message_service():
         sender = db.session.query(User).filter_by(id=sender_id).first()
         if not sender:
             return {
-                "message": f"Không tồn tại người dùng với id là {sender_id}",
-                "code": Constant.API_STATUS.NOT_FOUND
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         reveive = db.session.query(User).filter_by(id=reveive_id).first()
         if not reveive:
             return {
-                "message": f"Không tồn tại người nhận tin nhắn với id là {reveive_id}",
-                "code": Constant.API_STATUS.NOT_FOUND
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         # -----> IF CONVERSATION EXIT -> USE / IF NOT EXIT -> CREATE NEW CONVERSATION
@@ -129,15 +142,14 @@ def send_message_service():
         } for message in message_list]
 
         return {
-            "code": Constant.API_STATUS.SUCCESS,
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+            "code": Constant.API_STATUS.OK,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
             "conversations": conversations
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+        error_dict = parse_validation_error(e)
+        return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-SEND-MESSAGE] {e}")
         return internal_server_error_response()
@@ -148,13 +160,15 @@ def get_list_message_by_user_id_service(conversation_id: int, user_id: int):
         user = db.session.query(User).filter_by(id=user_id).first()
         if not user:
             return {
-                "message": f"Không tồn tại user user_id là `{user_id}`!",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         conversation_not_found_response = {
-            "message": f"Chưa có đoạn hội thoại nào với id là {conversation_id}",
-            "code": Constant.API_STATUS.NOT_FOUND
+            "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+            "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+            "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
         }
         conversation = db.session.query(Conversation).filter_by(id=conversation_id).first()
         if not conversation:
@@ -175,8 +189,9 @@ def get_list_message_by_user_id_service(conversation_id: int, user_id: int):
 
         return {
             "data": response,
-            "code": Constant.API_STATUS.SUCCESS,
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK,
+            "message": Constant.API_STATUS.OK_MESSAGE,
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-LIST-MESSAGE-BY-USER-ID] {e}")
@@ -186,7 +201,13 @@ def get_list_message_by_user_id_service(conversation_id: int, user_id: int):
 # ---> DELETE CONVERSATION
 def unmatch_user_service():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
+        if data is None:
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
         schema = UnmatchSchema()
         schema.load(data)
 
@@ -195,11 +216,14 @@ def unmatch_user_service():
 
         user = db.session.query(User).filter_by(id=user_id).first()
         if not user:
-            return dict(message=f"Không tồn tại user có ID là `{user_id}`!", code=Constant.API_STATUS.BAD_REQUEST)
+            return dict(message=Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                        http_status_code=Constant.API_STATUS.BAD_REQUEST,
+                        code=Constant.API_STATUS.USER_IS_NOT_VALIDATED)
 
         conversation_not_found_response = {
-            "message": f"Chưa có đoạn hội thoại nào với id là {conversation_id}",
-            "code": Constant.API_STATUS.NOT_FOUND
+            "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+            "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+            "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
         }
         conversation = db.session.query(Conversation).filter_by(id=conversation_id).first()
         if not conversation:
@@ -218,8 +242,9 @@ def unmatch_user_service():
 
         if not conversation:
             return {
-                "message": f"Không tồn tại đoạn hội thoại với id là {conversation_id} của user_id {user_id}",
-                "code": Constant.API_STATUS.NOT_FOUND
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
             }
 
         # -----> IF EXIST CONVERSATION ID WITH USER_ID
@@ -228,14 +253,13 @@ def unmatch_user_service():
         db.session.delete(conversation)
         db.session.commit()
         return {
-            "message": "unmacth thành công",
-            "code": Constant.API_STATUS.SUCCESS
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+        error_dict = parse_validation_error(e)
+        return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-LIST-MESSAGE-BY-USER-ID] {e}")
         return internal_server_error_response()

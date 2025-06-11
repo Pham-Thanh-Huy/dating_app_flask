@@ -8,11 +8,19 @@ from app.schema.update.update_profile_schema import UpdateProfileSchema
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
 from app.models import User, Profile, Interaction
+from app.utils.validate_util import parse_validation_error
 
 
 def add_interaction_service():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
+
+        if not data:
+            return {
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH,
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST
+            }
         schema = AddInteractionSchema()
         schema.load(data)
 
@@ -24,23 +32,26 @@ def add_interaction_service():
         user = db.session.query(User).filter_by(id=user_id).first()
         if not user:
             return {
-                "message": f"Không tồn tại user user_id là `{user_id}` chuẩn bị tuơng tác!",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         # ---> GET PROFILE HAS BEEN INTERACTION BY USER
         profile = db.session.query(Profile).filter_by(id=profile_id).first()
         if not profile:
             return {
-                "message": f"Không tồn tại profile có profile_id là `{profile_id}` sẽ dđưọc tương tác bởi user!",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         # CHECK USER_ID IN PROFILE = ID in user ----> CANCEL BECAUSE CANNOT INTERACTION WITH YOURSELF
         if profile.user_id == user.id:
             return {
-                "message": f"Bạn Không thể tự tương tác với chính tài khoản của bạn!",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_EXISTED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_EXISTED
             }
 
         # PROCESSING INTERACTION
@@ -71,8 +82,9 @@ def add_interaction_service():
                 check_interaction = True
 
         return {
-            "code": Constant.API_STATUS.SUCCESS,
-            "message": "Tương tác thành công",
+            "code": Constant.API_STATUS.OK,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
             "is_match": 'True' if check_interaction == True else 'False',
             "interaction": {
                 "user_id": user_id,
@@ -82,10 +94,8 @@ def add_interaction_service():
             }
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+        error_dict = parse_validation_error(e)
+        return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-ADD-INTERACTION] {e}")
         return internal_server_error_response()
@@ -96,14 +106,17 @@ def get_list_interaction_by_user_service(user_id: int, is_like: bool):
         user = db.session.query(User).filter_by(id=user_id).first()
         schema = UpdateProfileSchema(many=True)
         if not user:
-            return {"message": f"Không tồn tại user với id là {user_id}", "code": Constant.API_STATUS.BAD_REQUEST}
+            return {"message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                    "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                    "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED}
 
         # ---> GET LIST INTERACTION BY USER
         interaction_list = db.session.query(Interaction).filter_by(user_id=user_id, is_like=is_like).all()
         if not interaction_list:
             return {
-                "message": f"user_id `{user_id}` chưa tương tác {'Like' if is_like == True else 'DisLike'} với bất kì profile nào",
-                "code": Constant.API_STATUS.BAD_REQUEST}
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA}
 
         profile_list = [db.session.query(Profile).filter_by(id=interaction.profile_id).first() for interaction in
                         interaction_list]
@@ -112,8 +125,9 @@ def get_list_interaction_by_user_service(user_id: int, is_like: bool):
         return {
             "is_like": is_like,
             "profile": profile_list_map_to_dict,
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
-            "code": Constant.API_STATUS.SUCCESS
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-LIST-INTERACTION-BY-USER] {e}")

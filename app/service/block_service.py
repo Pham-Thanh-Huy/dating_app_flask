@@ -14,29 +14,43 @@ from app.utils.response_util import internal_server_error_response
 
 def block_user_service():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
+        if data is None:
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
         block_user_id = data.get('block_user_id') if data else None
 
         if not block_user_id:
-            return dict(message="Block_user_id không đưọc dể trống", code=Constant.API_STATUS.BAD_REQUEST)
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
 
         user_is_blocked = db.session.query(User).filter_by(id=block_user_id).first()
         if not user_is_blocked:
-            return dict(message=f"Không tồn tại user(sắp bị block) có ID là `{block_user_id}`!",
-                        code=Constant.API_STATUS.BAD_REQUEST)
+            return {
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
+            }
 
         # PARSE TOKEN TO USERNAME AND GET USER BY USERNAME AND BLOCK USER_iD
         data, err = parse_token_get_username(request.headers.get('Authorization', '')[len('Bearer '):].strip())
 
         if err:
-            return dict(message=data, code=Constant.API_STATUS.INTERNAL_SERVER_ERROR)
+            return internal_server_error_response()
 
         user = db.session.query(User).filter_by(username=data).first()
 
         if user.id == user_is_blocked.id:
             return {
-                "message": "Bạn không thể tự block chính mình",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
             }
 
         block = Block(user_id=user.id, block_user_id=user_is_blocked.id, created_at=datetime.datetime.now())
@@ -44,8 +58,9 @@ def block_user_service():
         db.session.commit()
 
         return {
-            "code": Constant.API_STATUS.SUCCESS,
-            "message": "Block thành công"
+            "code": Constant.API_STATUS.OK,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-BLOCK-USER] {e}")

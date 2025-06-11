@@ -90,6 +90,12 @@ def create_profile_service():
 def update_profile_service():
     try:
         data = request.get_json(silent=True)
+        if data is None:
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": "400",
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
         schema = UpdateProfileSchema()
         schema.load(data)
 
@@ -174,6 +180,7 @@ def update_image_profile_service():
     try:
         user_id = request.form.get("user_id")
         image = request.files.get("image")
+
         data = {
             "user_id": user_id,
             "image": image
@@ -184,8 +191,9 @@ def update_image_profile_service():
         profile = db.session.query(Profile).filter_by(user_id=user_id).first()
         if not profile:
             return {
-                "message": f"Không tồn tại profile có user_id là {user_id}",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
             }
 
         # PROCESSING IMAGE
@@ -199,15 +207,15 @@ def update_image_profile_service():
         # CONVERT TO BASE 64
         image_bytes = image.read()
         base64_image = base64.b64encode(image_bytes).decode('utf-8')
-        print(base64_image)
 
         return {
             "image": {
                 "id": new_file_name,
                 "image": base64_image
             },
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
-            "code": Constant.API_STATUS.SUCCESS
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK
         }
     except ValidationError as e:
        error_dict = parse_validation_error(e)
