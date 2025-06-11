@@ -10,6 +10,7 @@ from app.schema.block_schema import GetListBlockSchema
 from app.security.jwt_generation import parse_token_get_username
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
+from app.utils.validate_util import parse_validation_error
 
 
 def block_user_service():
@@ -69,7 +70,13 @@ def block_user_service():
 
 def get_list_block_service():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
+        if not data:
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
         schema = GetListBlockSchema()
         schema.load(data)
 
@@ -79,7 +86,9 @@ def get_list_block_service():
 
         user = db.session.query(User).filter_by(id=user_id).first()
         if not user:
-            return dict(message=f"Không tồn tại user có ID là `{user_id}`!", code=Constant.API_STATUS.BAD_REQUEST)
+            return dict(message=Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                        http_status_code=Constant.API_STATUS.BAD_REQUEST,
+                        code=Constant.API_STATUS.USER_IS_NOT_VALIDATED)
 
         block_list = db.session.query(Block).filter_by(user_id=user.id).offset(index).limit(count).all()
 
@@ -92,15 +101,14 @@ def get_list_block_service():
         profile_blocked_to_dict = [profile.to_dict() for profile in profile_by_user_blocked_list]
 
         return {
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
-            "code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK,
             "profiles": profile_blocked_to_dict
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+        error_dict = parse_validation_error(e)
+        return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-BLOCK-USER] {e}")
         return internal_server_error_response()
@@ -111,31 +119,40 @@ def unblock_user_service(block_user_id: int):
         data, err = parse_token_get_username(request.headers.get('Authorization', '')[len('Bearer '):].strip())
 
         if err:
-            return dict(message=data, code=Constant.API_STATUS.INTERNAL_SERVER_ERROR)
+            logging.error("PARSE TOKEN TO USER NOT SUCCESS -> INTERNAL SERVER ERRIR")
+            return internal_server_error_response()
 
         user = db.session.query(User).filter_by(username=data).first()
 
         user_is_blocked = db.session.query(User).filter_by(id=block_user_id).first()
         if not user_is_blocked:
-            return dict(message=f"Không tồn tại user bị block có ID là `{block_user_id}`!", code=Constant.API_STATUS.BAD_REQUEST)
+            return {
+                "message": Constant.API_STATUS.USER_IS_NOT_VALIDATED_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.USER_IS_NOT_VALIDATED
+            }
 
         if user.id == user_is_blocked.id:
             return {
-                "message": "Bạn không thể hủy block chính mình",
-                "code": Constant.API_STATUS.BAD_REQUEST
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
             }
-
         block = db.session.query(Block).filter_by(user_id=user.id, block_user_id=block_user_id).first()
 
         if not block:
-            return dict(message=f"user {user.username} không block user có id là {user_is_blocked.id}",
-                        code=Constant.API_STATUS.BAD_REQUEST)
+            return  {
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
+            }
 
         db.session.delete(block)
         db.session.commit()
         return {
-            "code": Constant.API_STATUS.SUCCESS,
-            "message": "Bỏ block thành công"
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK,
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-UNBLOCK-USER] {e}")

@@ -11,14 +11,18 @@ def get_notification_service(user_id: int, index: int, count: int):
         nofitication_list = db.session.query(Notification).filter_by(user_id=user_id).offset(index).limit(count).all()
 
         if not nofitication_list:
-            return dict(message=f"user có id là {user_id} không có thông báo nào!",
-                        code=Constant.API_STATUS.BAD_REQUEST)
+            return {
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
+            }
 
         # MAP TO DICT
         notification_list_to_dict = [notification.to_dict() for notification in nofitication_list]
         return {
-            "code": Constant.API_STATUS.SUCCESS,
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
+            "code": Constant.API_STATUS.OK,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
             "profiles": notification_list_to_dict
         }
     except Exception as e:
@@ -31,14 +35,19 @@ def delete_notification_service(id: int):
         nofitication = db.session.query(Notification).filter_by(id=id).first()
 
         if not nofitication:
-            return dict(message=f"không có thông báo nào với id là {id}!",
-                        code=Constant.API_STATUS.BAD_REQUEST)
+            return{
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
+            }
+
 
         db.session.delete(nofitication)
         db.session.commit()
         return {
-            "message": "Xoá thông báo thành công",
-            "code": Constant.API_STATUS.SUCCESS
+            "code": Constant.API_STATUS.OK,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
         }
     except Exception as e:
         logging.error(f"[ERROR-TO-DELETE-NOTIFICATION] {e}")

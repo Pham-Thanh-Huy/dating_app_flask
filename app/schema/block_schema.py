@@ -3,6 +3,7 @@ from marshmallow import Schema, fields
 class GetListBlockSchema(Schema):
     user_id = fields.Int(
         required=True,
+        strict=True,
         error_messages={
             'required': 'Parameter is not enough',
             'invalid': 'Parameter type is invalid'
@@ -10,6 +11,7 @@ class GetListBlockSchema(Schema):
     )
     index = fields.Int(
         required=True,
+        strict=True,
         error_messages={
             'required': 'Parameter is not enough',
             'invalid': 'Parameter type is invalid'
@@ -17,6 +19,7 @@ class GetListBlockSchema(Schema):
     )
     count = fields.Int(
         required=True,
+        strict=True,
         error_messages={
             'required': 'Parameter is not enough',
             'invalid': 'Parameter type is invalid'

@@ -8,11 +8,18 @@ from app.models import Profile
 from app.schema.location_schema import LocationSchema
 from app.utils.constant import Constant
 from app.utils.response_util import internal_server_error_response
+from app.utils.validate_util import parse_validation_error
 
 
 def get_list_user_near_by_service():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
+        if data is None:
+            return {
+                "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH
+            }
         schema = LocationSchema()
         schema.load(data)
 
@@ -37,23 +44,23 @@ def get_list_user_near_by_service():
         list_location_nearby = db.session.execute(query, params).fetchall()
         if not list_location_nearby:
             return {
-                "message": f"Không có user nào hiện tại  gần trong bán kính {data['radius']}km!",
-                "code": Constant.API_STATUS.FORBIDDEN
+                "message": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,
+                "http_status_code": Constant.API_STATUS.BAD_REQUEST,
+                "code": Constant.API_STATUS.NO_DATA_OR_END_OF_LIST_DATA
             }
 
         list_profile_nearby = [db.session.query(Profile).filter_by(id=location.profile_id).first() for location in
                                list_location_nearby]
         list_profile_map_to_dict = [profile.to_dict() for profile in list_profile_nearby]
         return {
-            "message": Constant.API_STATUS.SUCCESS_MESSAGE,
-            "code": Constant.API_STATUS.SUCCESS,
+            "message": Constant.API_STATUS.OK_MESSAGE,
+            "http_status_code": Constant.API_STATUS.SUCCESS,
+            "code": Constant.API_STATUS.OK,
             "nearby": list_profile_map_to_dict
         }
     except ValidationError as e:
-        return {
-            "message": e.messages,
-            "code": Constant.API_STATUS.BAD_REQUEST
-        }
+        error_dict = parse_validation_error(e)
+        return error_dict
     except Exception as e:
         logging.error(f"[ERROR-TO-GET-LIST-USER-NEAR-BY] {e}")
         return internal_server_error_response()

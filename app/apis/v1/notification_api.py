@@ -32,9 +32,20 @@ def get_notification_api():
     code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
 
-@notification_api.route('/<int:id>', methods=['DELETE'])
+@notification_api.route('/',defaults={'id':None}, methods=['DELETE'])
+@notification_api.route('/<id>', methods=['DELETE'])
 @authenticate_api
 def delete_notification_api(id: int):
+    if id is None:
+        return jsonify({
+            "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH,
+            "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+        }), 400
+    try:
+        id = int(id)
+    except ValueError:
+        return jsonify({'code': '1004', 'message': 'Parameter value is invalid'}), 400
+
     response = delete_notification_service(id)
     code = int(response.pop("http_status_code", 200))
     return jsonify(response), code
