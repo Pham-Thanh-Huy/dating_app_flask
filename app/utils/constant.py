@@ -2,7 +2,7 @@ import pytz
 
 
 class Constant:
-    ADD_USER_SUCCESS = "Thêm người dùng thành công!"
+    ADD_USER_SUCCESS = "Đăng ký người dùng thành công!"
     USERNAME_OR_PASSWORD_INCORRECT = "Tài khoản hoặc mật khẩu không đúng !"
     LOGIN_SUCCESS = "Đăng nhập thành công!"
     TOKEN_INVALID = "Token không hợp lệ!"
@@ -32,7 +32,7 @@ class Constant:
 
         # ---- > OK
         OK = "1000"
-        OK_MESSAGE = "ok"
+        OK_MESSAGE = "OK"
 
         # -----> Bài viết không tồn tại
         POST_IS_NOT_EXISTED = "9992"
@@ -44,7 +44,7 @@ class Constant:
 
         # -----> Không có dữ liệu hoặc không còn dữ liệu
         NO_DATA_OR_END_OF_LIST_DATA = "9994"
-        NO_DATA_OR_END_OF_LIST_DATA_MESSAGE = "No data or end of list data"
+        NO_DATA_OR_END_OF_LIST_DATA_MESSAGE = "No Data or end of list data"
 
         # ----> Không có người dùng này
         USER_IS_NOT_VALIDATED = "9995"
@@ -52,7 +52,7 @@ class Constant:
 
         # ----> Người dùng đã tồn tại
         USER_EXISTED = "9996"
-        USER_EXISTED_MESSAGE = "User existed"
+        USER_EXISTED_MESSAGE = "User existed."
 
         # ----> Phương thức này không đúng
         METHOD_IS_INVALID = "9997"
@@ -60,51 +60,51 @@ class Constant:
 
         # ---> Sai token
         TOKEN_IS_INVALID = "9998"
-        TOKEN_IS_INVALID_MESSAGE = "Token is invalid"
+        TOKEN_IS_INVALID_MESSAGE = "Token is invalid."
 
         # ----> Lỗi exception
         EXCEPTION_ERROR = "9999"
-        EXCEPTION_ERROR_MESSAGE = "Exception error"
+        EXCEPTION_ERROR_MESSAGE = "Exception error."
 
         # ----> Lỗi mất kết nối hoặc thực thi câu SQL
         CANNOT_CONNECT_TO_DB = "1001"
-        CANNOT_CONNECT_TO_DB_MESSAGE = "Can not connect to DB"
+        CANNOT_CONNECT_TO_DB_MESSAGE = "Can not connect to DB."
 
         # ----> Số lượng paramater không đầy đủ
         PARAMETER_IS_NOT_ENOUGH = "1002"
-        PARAMETER_IS_NOT_ENOUGH_MESSAGE = "Parameter is not enough"
+        PARAMETER_IS_NOT_ENOUGH_MESSAGE = "Parameter is not enought."
 
         # ----> Kiểu tham số không đúng đắn
         PARAMETER_TYPE_IS_INVALID = "1003"
-        PARAMETER_TYPE_IS_INVALID_MESSAGE = "Parameter type is invalid"
+        PARAMETER_TYPE_IS_INVALID_MESSAGE = "Parameter type is invalid."
 
         # ----> Giá trị của tham số không hợp lệ
         PARAMETER_VALUE_IS_INVALID = "1004"
-        PARAMETER_VALUE_IS_INVALID_MESSAGE = "Parameter value is invalid"
+        PARAMETER_VALUE_IS_INVALID_MESSAGE = "Parameter value is invalid."
 
         # ----> Unknow error
         UNKNOW_ERROR = "1005"
-        UNKNOW_ERROR_MESSAGE = "Unknow error"
+        UNKNOW_ERROR_MESSAGE = "Unknown error."
 
         # ----> Cỡ file vượt quá phép cho mức
         FILE_SIZE_IS_TOO_BIG = "1006"
-        FILE_SIZE_IS_TOO_BIG_MESSAGE = "File size is to big"
+        FILE_SIZE_IS_TOO_BIG_MESSAGE = "File size is too big."
 
         # ----> upload thất bại
         UPLOAD_FILE_FAILED = "1007"
-        UPLOAD_FILE_FAILED_MESSAGE = "Upload file failed!"
+        UPLOAD_FILE_FAILED_MESSAGE = "Upload File Failed!."
 
         # ----> Số lượng imgae vượt quá quy định
         MAXIMUM_NUMBER_OF_IMAGES = "1008"
-        MAXIMUM_NUMBER_OF_IMAGES_MESSAGE = "Maximum number of images"
+        MAXIMUM_NUMBER_OF_IMAGES_MESSAGE = "Maximum number of images."
 
         # ----> Không có quyền truy cập tài nguyên
         NOT_ACCESS = "1009"
-        NOT_ACCESS_MESSAGE = "Not access"
+        NOT_ACCESS_MESSAGE = "Not access."
 
         # ----> Hành động này đã được người dùng thực hiện trước đây
         ACTION_HAS_BEEN_PREVIOUSLY_BY_THIS_USER = "1010"
-        ACTION_HAS_BEEN_PREVIOUSLY_BY_THIS_USER_MESSAGE = "Action has been previously by this user"
+        ACTION_HAS_BEEN_PREVIOUSLY_BY_THIS_USER_MESSAGE = "ation has been previously by this user."
 
 
 

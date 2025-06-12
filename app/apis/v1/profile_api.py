@@ -23,13 +23,20 @@ def update_profile_api():
     return jsonify(response), code
 
 @profile_api.route("/", defaults={'user_id': None}, methods=['GET'])
-@profile_api.route("/<int:user_id>", methods=['GET'])
+@profile_api.route("/<user_id>", methods=['GET'])
 @authenticate_api
 def get_profile_by_user_id_api(user_id):
     if user_id is None:
         return jsonify({
             "code": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH,
             "message": Constant.API_STATUS.PARAMETER_IS_NOT_ENOUGH_MESSAGE,
+        }), 400
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        return jsonify({
+            'code': '1003',
+            'message': 'Parameter type is invalid'
         }), 400
 
     response = get_profile_by_user_id_service(user_id)
